@@ -7,11 +7,14 @@ Trained on real transaction data from Kaggle SAML-D dataset.
 Falls back to synthetic data if no trained model found.
 """
 
+import logging
 import numpy as np
 from sklearn.ensemble import IsolationForest
 import joblib
 import os
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 
 # ── Load trained model ────────────────────────────────────────────────────
@@ -22,13 +25,15 @@ def _get_classifier():
     """Load trained model from disk OR fallback to synthetic"""
     global _clf
     if _clf is None:
-        model_path = 'aml_monitoring/models/isolation_forest.pkl'
+        model_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "models", "isolation_forest.pkl")
+        )
 
         if os.path.exists(model_path):
             _clf = joblib.load(model_path)
-            print(f"✓ Loaded REAL trained model: {model_path}")
+            logger.info("Loaded trained IsolationForest model from %s", model_path)
         else:
-            print("⚠ No trained model found. Using synthetic fallback.")
+            logger.warning("No trained IsolationForest model found at %s; using synthetic fallback.", model_path)
             population = _build_synthetic_population(n_samples=500)
             _clf = IsolationForest(
                 n_estimators=200,
@@ -203,6 +208,9 @@ def _parse_time(ts):
     if isinstance(ts, datetime):
         return ts
     try:
-        return datetime.fromisoformat(str(ts))
-    except:
+        s = str(ts)
+        if s.endswith('Z'):
+            s = s[:-1] + '+00:00'
+        return datetime.fromisoformat(s)
+    except Exception:
         return datetime.now()

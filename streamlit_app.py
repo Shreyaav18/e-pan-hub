@@ -368,7 +368,7 @@ div[data-testid="stVerticalBlock"] { gap: 0.5rem; }
 
 st.markdown(DARK_CSS, unsafe_allow_html=True)
 
-BACKEND_URL = "http://localhost:8000"
+DEFAULT_BACKEND_URL = "http://localhost:8000"
 
 def score_color_class(score):
     if score >= 0.75:
@@ -438,8 +438,12 @@ def render_sidebar():
     st.sidebar.markdown('<hr style="border-color:#1A1E28;margin:16px 0">', unsafe_allow_html=True)
 
     st.sidebar.markdown('<span class="sidebar-label">Configuration</span>', unsafe_allow_html=True)
-    backend = st.sidebar.text_input("API Endpoint", value=BACKEND_URL, key="backend_url")
-    use_mock = st.sidebar.checkbox("Use Mock Data", value=True, help="Enable to test without a running backend")
+    backend = st.sidebar.text_input("API Endpoint", value=DEFAULT_BACKEND_URL, key="backend_url")
+    use_mock = st.sidebar.checkbox(
+        "Use Mock Data",
+        value=True,
+        help="Demo mode: uses simulated outputs (no trained models / backend calls).",
+    )
 
     st.sidebar.markdown('<hr style="border-color:#1A1E28;margin:16px 0">', unsafe_allow_html=True)
     st.sidebar.markdown('<span class="sidebar-label">Thresholds</span>', unsafe_allow_html=True)
@@ -467,7 +471,7 @@ def render_score_row(label, value, delay=0):
         <span class="score-value {cls}">{score_to_pct(value)}</span>
     </div>"""
 
-def render_kyc_tab(use_mock):
+def render_kyc_tab(backend, use_mock):
     st.markdown('<div class="section-header">Document Verification + Biometric Authentication</div>', unsafe_allow_html=True)
 
     col_form, col_results = st.columns([1, 1.2], gap="large")
@@ -514,7 +518,7 @@ def render_kyc_tab(use_mock):
                         files["selfie_image"] = selfie_file
                     if ref_file:
                         files["reference_card"] = ref_file
-                    resp = requests.post(f"{BACKEND_URL}/verify/upload/", data=data, files=files, timeout=30)
+                    resp = requests.post(f"{backend}/verify/upload/", data=data, files=files, timeout=30)
                     result = resp.json()
                 except Exception as e:
                     st.error(f"Backend error: {e}")
@@ -614,7 +618,7 @@ def render_kyc_tab(use_mock):
                 unsafe_allow_html=True
             )
 
-def render_aml_tab(use_mock):
+def render_aml_tab(backend, use_mock):
     st.markdown('<div class="section-header">AML Transaction Monitoring</div>', unsafe_allow_html=True)
 
     col_left, col_right = st.columns([1, 1.2], gap="large")
@@ -656,7 +660,7 @@ def render_aml_tab(use_mock):
                         "account_age_days": account_age,
                         "days_since_last_txn": days_since_last,
                     }
-                    resp = requests.post(f"{BACKEND_URL}/aml/monitor/", json=payload, timeout=30)
+                    resp = requests.post(f"{backend}/aml/monitor/", json=payload, timeout=30)
                     aml_result = resp.json()
                 except Exception as e:
                     st.error(f"Backend error: {e}")
@@ -846,10 +850,10 @@ def main():
     tab1, tab2, tab3 = st.tabs(["KYC Verification", "AML Monitoring", "Dashboard"])
 
     with tab1:
-        render_kyc_tab(use_mock)
+        render_kyc_tab(backend, use_mock)
 
     with tab2:
-        render_aml_tab(use_mock)
+        render_aml_tab(backend, use_mock)
 
     with tab3:
         render_dashboard_tab()

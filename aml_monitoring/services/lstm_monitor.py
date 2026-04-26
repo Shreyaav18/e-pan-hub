@@ -326,6 +326,9 @@ def _parse_time(ts):
     if isinstance(ts, datetime):
         return ts
     try:
-        return datetime.fromisoformat(str(ts))
+        s = str(ts)
+        if s.endswith('Z'):
+            s = s[:-1] + '+00:00'
+        return datetime.fromisoformat(s)
     except ValueError:
         return datetime.now()

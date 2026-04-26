@@ -102,39 +102,44 @@ def run_aml_monitoring(transaction, history=None,
     verdict = _aml_verdict(saml)
 
     return {
-        # DB fields
-        'rule_flags':             [f['rule'] for f in rule_result['flags']],
-        'isolation_forest_score': iforest_result['anomaly_score'],
-        'lstm_anomaly_score':     lstm_result['lstm_anomaly_score'],
+        # Primary outputs
         'aml_score':              saml,
-        'penalty_flags':          penalty_flags,
-        'laundering_type':        laundering_type,
+        'verdict':                verdict,
 
-        # Display context
+        # UI-friendly sub-scores (1.0 = clean)
+        'isolation_forest_score': iforest_result['clean_score'],
+        'lstm_anomaly_score':     lstm_result['sequence_score'],
+
+        # DB fields / audit context
+        'rule_flags':             [f['rule'] for f in rule_result['flags']],
         'rule_details':           rule_result['flags'],
         'severity_counts':        rule_result['severity_counts'],
-        'iforest_is_anomaly':     iforest_result['is_anomaly'],
-        'lstm_verdict':           lstm_result['sequential_verdict'],
-        'layering_score':         lstm_result['layering_score'],
-        'smurfing_score':         lstm_result['smurfing_score'],
+        'penalty_flags':          penalty_flags,
+        'has_hard_violation':     rule_result['has_hard_violation'],
+        'laundering_type':        laundering_type,
         'applicable_rules':       applicable_rules,
         'laundering_description': laundering_desc,
-        'verdict':                verdict,
-        'has_hard_violation':     rule_result['has_hard_violation'],
 
-        # Score breakdown for UI
+        # Score breakdown
         'score_breakdown': {
             'Rule Engine':      rule_score,
             'Isolation Forest': iforest_clean,
             'LSTM Sequential':  lstm_clean,
         },
+
+        # Debug/analytics signals (higher = more anomalous)
+        'iforest_anomaly_score':   iforest_result['anomaly_score'],
+        'iforest_is_anomaly':      iforest_result['is_anomaly'],
+        'lstm_raw_anomaly_score':  lstm_result['lstm_anomaly_score'],
+        'lstm_sequential_verdict': lstm_result['sequential_verdict'],
+        'layering_score':          lstm_result['layering_score'],
+        'smurfing_score':          lstm_result['smurfing_score'],
     }
 
 
 def _aml_verdict(saml):
     if saml >= 0.70:
-        return ('CLEAN',     'success')
+        return "CLEAN"
     elif saml >= 0.40:
-        return ('MONITOR',   'warning')
-    else:
-        return ('SUSPICIOUS', 'danger')
+        return "MONITOR"
+    return "SUSPICIOUS"

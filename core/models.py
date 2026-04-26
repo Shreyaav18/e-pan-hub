@@ -45,6 +45,26 @@ class VerificationCase(models.Model):
     lstm_anomaly_score     = models.FloatField(null=True, blank=True)
     aml_score              = models.FloatField(null=True, blank=True)
 
+    # AML Dataset Integration (SAML-D)
+    payment_type = models.CharField(
+        max_length=50,
+        blank=True,
+        choices=[
+            ('credit_card', 'Credit Card'),
+            ('debit_card', 'Debit Card'),
+            ('cash', 'Cash'),
+            ('ach', 'ACH Transfer'),
+            ('cross_border', 'Cross-border'),
+            ('cheque', 'Cheque'),
+        ]
+    )
+    payment_currency = models.CharField(max_length=3, blank=True)  # USD, INR, EUR, etc
+    received_currency = models.CharField(max_length=3, blank=True)
+    sender_bank_location = models.CharField(max_length=100, blank=True)  # Full country name
+    receiver_bank_location = models.CharField(max_length=100, blank=True)  # Full country name
+    currency_mismatch = models.BooleanField(default=False)
+    laundering_type = models.CharField(max_length=100, blank=True)  # From SAML-D dataset
+
     # Module 4 - Risk Scoring Engine
     risk_total      = models.FloatField(null=True, blank=True)
     penalty_flags   = models.JSONField(default=list)
