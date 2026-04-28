@@ -397,6 +397,14 @@ def mock_doc_result():
         "doc_structural_align": round(random.uniform(0.75, 0.97), 3),
         "doc_metadata_clean": round(random.uniform(0.80, 1.0), 3),
         "doc_ssim_score": round(random.uniform(0.60, 0.90), 3),
+        "doc_security_features":  round(random.uniform(0.70, 0.95), 3),
+        "sec_itd_emblem":         round(random.uniform(0.65, 0.95), 3),
+        "sec_qr_code":            round(random.uniform(0.30, 1.00), 3),
+        "sec_face_present":       round(random.uniform(0.70, 1.00), 3),
+        "sec_signature":          round(random.uniform(0.60, 1.00), 3),
+        "sec_govt_text":          round(random.uniform(0.65, 1.00), 3),
+        "sec_background_pattern": round(random.uniform(0.55, 0.95), 3),
+        "extracted_father":       "SURESH KUMAR SHARMA",
         "extracted_pan_number": "ABCDE1234F",
         "extracted_name": "RAJESH KUMAR SHARMA",
         "extracted_dob": "15/08/1985",
@@ -518,7 +526,7 @@ def render_kyc_tab(backend, use_mock):
                         files["selfie_image"] = selfie_file
                     if ref_file:
                         files["reference_card"] = ref_file
-                    resp = requests.post(f"{backend}/verify/upload/", data=data, files=files, timeout=30)
+                    resp = requests.post(f"{backend}/verify/api/verify/", data=data, files=files, timeout=30)
                     result = resp.json()
                 except Exception as e:
                     st.error(f"Backend error: {e}")
@@ -565,16 +573,25 @@ def render_kyc_tab(backend, use_mock):
                         <div style="font-family:'DM Mono',monospace;font-size:12px;color:#C8CFD8;margin-bottom:10px;">{result.get("extracted_name","--")}</div>
                         <div style="font-size:10px;color:#5A6377;letter-spacing:0.1em;margin-bottom:2px;">DATE OF BIRTH</div>
                         <div style="font-family:'DM Mono',monospace;font-size:12px;color:#C8CFD8;">{result.get("extracted_dob","--")}</div>
+                        <div style="font-size:10px;color:#5A6377;letter-spacing:0.1em;margin-top:10px;margin-bottom:2px;">FATHER'S NAME</div>
+                        <div style="font-family:'DM Mono',monospace;font-size:12px;color:#C8CFD8;">{result.get("extracted_father","--")}</div>
                     </div>""", unsafe_allow_html=True)
 
                 rows = [
                     ("OCR Validation",      result.get("doc_ocr_valid", 0)),
+                    ("Security Features",   result.get("doc_security_features", 0)),
                     ("Font Consistency",    result.get("doc_font_consistency", 0)),
                     ("Edge Consistency",    result.get("doc_edge_consistency", 0)),
                     ("Color Histogram",     result.get("doc_color_histogram", 0)),
                     ("Structural Align",    result.get("doc_structural_align", 0)),
                     ("Metadata Clean",      result.get("doc_metadata_clean", 0)),
                     ("SSIM Score",          result.get("doc_ssim_score", 0)),
+                    ("— ITD Emblem",        result.get("sec_itd_emblem", 0)),
+                    ("— QR Code",           result.get("sec_qr_code", 0)),
+                    ("— Face Present",      result.get("sec_face_present", 0)),
+                    ("— Signature",         result.get("sec_signature", 0)),
+                    ("— Govt Text",         result.get("sec_govt_text", 0)),
+                    ("— Background",        result.get("sec_background_pattern", 0)),
                 ]
                 rows_html = "".join(render_score_row(l, v, i * 0.05) for i, (l, v) in enumerate(rows))
                 st.markdown(f'<div style="margin-top:12px;">{rows_html}</div>', unsafe_allow_html=True)
