@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC — Document Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:       #06070A;
+            --surface:  #0B0D12;
+            --surface2: #0F1117;
+            --border:   #1A1E28;
+            --border2:  #2A2F3A;
+            --text:     #C8CFD8;
+            --text-dim: #5A6377;
+            --accent:   #3ECFCF;
+            --success:  #00D68F;
+            --warn:     #FFA502;
+            --danger:   #FF4757;
+        }
+
+        html, body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .nav-meta {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #EAEEF4;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+        }
+
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 32px;
+            animation: fadeUp 0.5s ease 0.1s forwards;
+            opacity: 0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        .upload-zone {
+            background: var(--surface2);
+            border: 1px dashed var(--border2);
+            border-radius: 2px;
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(62, 207, 207, 0.03);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 12px;
+            opacity: 0.3;
+        }
+
+        .upload-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .upload-hint {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--border2);
+            letter-spacing: 0.05em;
+        }
+
+        .upload-filename {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 8px;
+            display: none;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 28px 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .optional-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--border2);
+            border: 1px solid var(--border);
+            padding: 1px 6px;
+            border-radius: 2px;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            background: rgba(255, 71, 87, 0.08);
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            border-left: 2px solid var(--danger);
+            border-radius: 2px;
+            padding: 10px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--danger);
+            margin-bottom: 8px;
+        }
+
+        .submit-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 12px 36px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 24px rgba(62, 207, 207, 0.25);
+        }
+
+        .submit-btn:active { transform: scale(0.99); }
+
+        .submit-btn.loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .info-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--accent);
+            border-radius: 2px;
+            padding: 10px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 20px;
+            animation: fadeUp 0.5s ease 0.3s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">KYC / AML Platform</div>
+    <div class="nav-meta">Document Verification Module</div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <div class="page-title">PAN Card Verification</div>
+        <div class="page-subtitle">Submit documents to run the full verification pipeline</div>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="verifyForm">
+        {% csrf_token %}
+        <div class="form-card">
+            <div class="section-label">Submission</div>
+
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="full_name" class="form-input" placeholder="As it appears on PAN card">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">PAN Card Image</label>
+                <div class="upload-zone" id="panZone">
+                    <input type="file" name="pan_card" accept=".jpg,.jpeg,.png,.bmp" id="panInput">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <div class="upload-text">Drag and drop file here</div>
+                    <div class="upload-hint">Limit 200MB per file · JPG, JPEG, PNG, BMP</div>
+                    <div class="upload-filename" id="panFilename"></div>
+                </div>
+            </div>
+
+            <hr class="divider">
+            <div class="section-label">Optional Inputs</div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        Live Selfie
+                        <span class="optional-tag">Optional</span>
+                    </label>
+                    <div class="upload-zone" id="selfieZone">
+                        <input type="file" name="selfie_image" accept=".jpg,.jpeg,.png" id="selfieInput">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <div class="upload-text">Drag and drop file here</div>
+                        <div class="upload-hint">JPG, JPEG, PNG</div>
+                        <div class="upload-filename" id="selfieFilename"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Reference PAN
+                        <span class="optional-tag">Optional</span>
+                    </label>
+                    <div class="upload-zone" id="refZone">
+                        <input type="file" name="reference_card" accept=".jpg,.jpeg,.png" id="refInput">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <div class="upload-text">Drag and drop file here</div>
+                        <div class="upload-hint">JPG, JPEG, PNG</div>
+                        <div class="upload-filename" id="refFilename"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Run Verification</button>
+        </div>
+    </form>
+
+    <div class="info-bar">
+        Processing includes YOLO field detection, OCR validation, security feature analysis, and authenticity scoring.
+    </div>
+</div>
+
+<script>
+    function bindFileInput(inputId, filenameId) {
+        const input = document.getElementById(inputId);
+        const label = document.getElementById(filenameId);
+        input.addEventListener('change', () => {
+            if (input.files.length > 0) {
+                label.textContent = input.files[0].name;
+                label.style.display = 'block';
+            }
+        });
+    }
+
+    bindFileInput('panInput',    'panFilename');
+    bindFileInput('selfieInput', 'selfieFilename');
+    bindFileInput('refInput',    'refFilename');
+
+    document.getElementById('verifyForm').addEventListener('submit', () => {
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Processing...';
+        btn.classList.add('loading');
+    });
+
+    ['panZone', 'selfieZone', 'refZone'].forEach(id => {
+        const zone = document.getElementById(id);
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', () => zone.classList.remove('dragover'));
+    });
+</script>
+</body>
+</html>

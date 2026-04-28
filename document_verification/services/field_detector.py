@@ -1,4 +1,5 @@
-from ultralyticsplus import YOLO
+from huggingface_hub import hf_hub_download
+from ultralytics import YOLO
 
 _model = None
 
@@ -15,7 +16,11 @@ FIELD_ALIASES = {
 def _get_model():
     global _model
     if _model is None:
-        _model = YOLO('foduucom/pan-card-detection')
+        model_path = hf_hub_download(
+            repo_id='foduucom/pan-card-detection',
+            filename='best.pt'
+        )
+        _model = YOLO(model_path)
         _model.overrides['conf'] = 0.25
         _model.overrides['iou'] = 0.45
         _model.overrides['agnostic_nms'] = False
